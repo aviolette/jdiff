@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE tree_delta PUBLIC '-//DePaul//DTD Tree Delta//EN' 'file:///c:/my documents/classes/thesis/code/treedelta.dtd'>
+
+<tree_delta>
+  <update id="0">
+    <value name="Package" isnull="true" value="" />
+  </update>
+  <delete id="28" />
+  <delete id="35" />
+  <delete id="6" />
+  <delete id="11" />
+  <delete id="27" />
+  <delete id="15" />
+  <delete id="43" />
+  <delete id="4" />
+  <delete id="9" />
+  <delete id="24" />
+  <delete id="29" />
+  <delete id="36" />
+  <delete id="3" />
+  <delete id="8" />
+  <delete id="14" />
+  <delete id="23" />
+  <delete id="1" />
+  <delete id="17" />
+  <delete id="40" />
+  <delete id="25" />
+  <delete id="30" />
+  <delete id="37" />
+  <delete id="2" />
+  <delete id="5" />
+  <delete id="7" />
+  <delete id="10" />
+  <delete id="12" />
+  <delete id="13" />
+  <delete id="18" />
+  <delete id="21" />
+  <delete id="22" />
+  <delete id="26" />
+  <delete id="31" />
+  <delete id="19" />
+  <delete id="20" />
+  <delete id="32" />
+  <delete id="33" />
+  <delete id="34" />
+  <delete id="41" />
+  <delete id="42" />
+  <delete id="38" />
+  <delete id="16" />
+  <delete id="39" />
+</tree_delta>
+

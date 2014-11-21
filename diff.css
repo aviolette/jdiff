@@ -1,0 +1,34 @@
+body
+{
+  background-color: white
+}
+
+.inserted
+{
+  background-color: red
+}
+
+.deleted
+{
+  background-color: green
+}
+
+.moved
+{
+  background-color: yellow
+}
+
+.updated
+{
+  background-color: purple
+}
+
+*.normal
+{
+  background-color: white
+}
+
+*.hilite
+{
+  background-color: blue
+}

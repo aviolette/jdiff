@@ -1,0 +1,390 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE tree_delta PUBLIC '-//DePaul//DTD Tree Delta//EN' 'file:///c:/my documents/classes/thesis/code/treedelta.dtd'>
+
+<tree_delta>
+  <update id="0">
+    <value name="Package" value="bar" />
+  </update>
+  <insert id="2" target="0" type="class" col="1" pos="1">
+    <value name="Visibility" value="public" />
+    <value name="Extends" isnull="true" value="" />
+    <value name="Static" value="false" />
+    <value name="Final" value="false" />
+    <value name="Name" value="Foo" />
+    <value name="Abstract" value="false" />
+  </insert>
+  <insert id="3" target="2" type="constructor" col="0" pos="0">
+    <value name="Visibility" value="public" />
+    <value name="Name" value="Foo" />
+  </insert>
+  <insert id="4" target="2" type="field" col="0" pos="1">
+    <value name="Visibility" value="public" />
+    <value name="Static" value="true" />
+    <value name="Final" value="true" />
+    <value name="Volatile" value="false" />
+    <value name="Transient" value="false" />
+  </insert>
+  <insert id="5" target="2" type="field" col="0" pos="2">
+    <value name="Visibility" value="private" />
+    <value name="Static" value="true" />
+    <value name="Final" value="true" />
+    <value name="Volatile" value="false" />
+    <value name="Transient" value="false" />
+  </insert>
+  <insert id="6" target="2" type="field" col="0" pos="3">
+    <value name="Visibility" value="public" />
+    <value name="Static" value="false" />
+    <value name="Final" value="false" />
+    <value name="Volatile" value="false" />
+    <value name="Transient" value="true" />
+  </insert>
+  <insert id="7" target="2" type="method" col="0" pos="4">
+    <value name="Visibility" value="public" />
+    <value name="Synchronized" value="false" />
+    <value name="Native" value="false" />
+    <value name="Static" value="false" />
+    <value name="Final" value="false" />
+    <value name="Name" value="anAbstractMethod" />
+    <value name="Abstract" value="true" />
+  </insert>
+  <insert id="8" target="2" type="method" col="0" pos="5">
+    <value name="Visibility" value="public" />
+    <value name="Synchronized" value="false" />
+    <value name="Native" value="false" />
+    <value name="Static" value="false" />
+    <value name="Final" value="false" />
+    <value name="Name" value="bar" />
+    <value name="Abstract" value="false" />
+  </insert>
+  <insert id="9" target="2" type="method" col="0" pos="6">
+    <value name="Visibility" value="public" />
+    <value name="Synchronized" value="true" />
+    <value name="Native" value="false" />
+    <value name="Static" value="false" />
+    <value name="Final" value="false" />
+    <value name="Name" value="aSynchronizedMethod" />
+    <value name="Abstract" value="false" />
+  </insert>
+  <insert id="10" target="2" type="constructor" col="0" pos="7">
+    <value name="Visibility" value="public" />
+    <value name="Name" value="Foo" />
+  </insert>
+  <insert id="11" target="3" type="block" col="1" pos="0" />
+  <insert id="12" target="4" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="13" target="4" type="vardec" col="1" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="A_FIELD" />
+  </insert>
+  <insert id="14" target="5" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="15" target="5" type="vardec" col="1" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="ANOTHER_FIELD" />
+  </insert>
+  <insert id="16" target="6" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="17" target="6" type="vardec" col="1" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="aField" />
+  </insert>
+  <insert id="18" target="7" type="type" col="3" pos="1">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="void" />
+  </insert>
+  <insert id="19" target="8" type="block" col="1" pos="0" />
+  <insert id="20" target="8" type="type" col="3" pos="1">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="Object" />
+  </insert>
+  <insert id="21" target="9" type="parameter" col="0" pos="0">
+    <value name="Final" value="false" />
+  </insert>
+  <insert id="22" target="9" type="parameter" col="0" pos="1">
+    <value name="Final" value="true" />
+  </insert>
+  <insert id="23" target="9" type="block" col="1" pos="0" />
+  <insert id="24" target="9" type="type" col="3" pos="1">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="25" target="10" type="parameter" col="0" pos="0">
+    <value name="Final" value="false" />
+  </insert>
+  <insert id="26" target="10" type="block" col="1" pos="0" />
+  <insert id="27" target="11" type="constinv" col="0" pos="0">
+    <value name="This" value="true" />
+  </insert>
+  <insert id="28" target="13" type="literal" col="0" pos="0">
+    <value name="Value" value="0" />
+  </insert>
+  <insert id="29" target="15" type="literal" col="0" pos="0">
+    <value name="Value" value="1" />
+  </insert>
+  <insert id="30" target="17" type="literal" col="0" pos="0">
+    <value name="Value" value="2" />
+  </insert>
+  <insert id="31" target="19" type="syncblock" col="0" pos="0" />
+  <insert id="32" target="19" type="return" col="0" pos="1" />
+  <insert id="33" target="21" type="vardec" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="foo" />
+  </insert>
+  <insert id="34" target="21" type="type" col="1" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="String" />
+  </insert>
+  <insert id="35" target="22" type="vardec" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="bar" />
+  </insert>
+  <insert id="36" target="22" type="type" col="1" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="String" />
+  </insert>
+  <insert id="37" target="23" type="stexpr" col="0" pos="0">
+    <value name="AsStatement" value="true" />
+  </insert>
+  <insert id="38" target="23" type="variable" col="0" pos="1">
+    <value name="AsStatement" value="true" />
+    <value name="Final" value="false" />
+  </insert>
+  <insert id="39" target="23" type="variable" col="0" pos="2">
+    <value name="AsStatement" value="true" />
+    <value name="Final" value="false" />
+  </insert>
+  <insert id="40" target="23" type="variable" col="0" pos="3">
+    <value name="AsStatement" value="true" />
+    <value name="Final" value="false" />
+  </insert>
+  <insert id="41" target="23" type="for" col="0" pos="4" />
+  <insert id="42" target="25" type="vardec" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="b" />
+  </insert>
+  <insert id="43" target="25" type="type" col="1" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="Bar" />
+  </insert>
+  <insert id="44" target="26" type="constinv" col="0" pos="0">
+    <value name="This" value="false" />
+  </insert>
+  <insert id="45" target="27" type="name" col="0" pos="0">
+    <value name="Value" value="b" />
+  </insert>
+  <insert id="46" target="28" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="47" target="29" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="48" target="30" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="49" target="31" type="block" col="0" pos="0" />
+  <insert id="50" target="31" type="name" col="1" pos="0">
+    <value name="Value" value="aField" />
+  </insert>
+  <insert id="51" target="32" type="literal" col="0" pos="0">
+    <value name="Value" isnull="true" value="" />
+  </insert>
+  <insert id="52" target="37" type="binexp" col="0" pos="0">
+    <value name="Operator" value="25" />
+  </insert>
+  <insert id="53" target="38" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="54" target="38" type="vardec" col="1" pos="0">
+    <value name="Dimension" value="2" />
+    <value name="Name" value="foo" />
+  </insert>
+  <insert id="55" target="39" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="56" target="39" type="vardec" col="1" pos="0">
+    <value name="Dimension" value="1" />
+    <value name="Name" value="foobar" />
+  </insert>
+  <insert id="57" target="40" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="58" target="40" type="vardec" col="1" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="j" />
+  </insert>
+  <insert id="59" target="41" type="binexp" col="0" pos="0">
+    <value name="Operator" value="13" />
+  </insert>
+  <insert id="60" target="41" type="variable" col="1" pos="0">
+    <value name="AsStatement" value="false" />
+    <value name="Final" value="false" />
+  </insert>
+  <insert id="61" target="41" type="stexpr" col="2" pos="0">
+    <value name="AsStatement" value="false" />
+  </insert>
+  <insert id="62" target="41" type="stexpr" col="2" pos="1">
+    <value name="AsStatement" value="false" />
+  </insert>
+  <insert id="63" target="41" type="block" col="3" pos="0" />
+  <insert id="64" target="44" type="name" col="0" pos="0">
+    <value name="Value" value="b" />
+  </insert>
+  <insert id="65" target="49" type="stexpr" col="0" pos="0">
+    <value name="AsStatement" value="true" />
+  </insert>
+  <insert id="66" target="49" type="stexpr" col="0" pos="1">
+    <value name="AsStatement" value="true" />
+  </insert>
+  <insert id="67" target="51" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="null" />
+  </insert>
+  <insert id="68" target="52" type="literal" col="0" pos="0">
+    <value name="Value" value="3" />
+  </insert>
+  <insert id="69" target="52" type="name" col="1" pos="0">
+    <value name="Value" value="ATRANSIENT_FIELD" />
+  </insert>
+  <insert id="70" target="54" type="init" col="0" pos="0" />
+  <insert id="71" target="56" type="arrayinit" col="0" pos="0" />
+  <insert id="72" target="58" type="literal" col="0" pos="0">
+    <value name="Value" value="0" />
+  </insert>
+  <insert id="73" target="59" type="name" col="0" pos="0">
+    <value name="Value" value="foobar.length" />
+  </insert>
+  <insert id="74" target="59" type="name" col="1" pos="0">
+    <value name="Value" value="i" />
+  </insert>
+  <insert id="75" target="60" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="76" target="60" type="vardec" col="1" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="i" />
+  </insert>
+  <insert id="77" target="61" type="postfix" col="0" pos="0">
+    <value name="Operator" value="22" />
+  </insert>
+  <insert id="78" target="62" type="postfix" col="0" pos="0">
+    <value name="Operator" value="22" />
+  </insert>
+  <insert id="79" target="63" type="stexpr" col="0" pos="0">
+    <value name="AsStatement" value="true" />
+  </insert>
+  <insert id="80" target="65" type="methodcall" col="0" pos="0" />
+  <insert id="81" target="66" type="methodcall" col="0" pos="0" />
+  <insert id="82" target="68" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="83" target="70" type="type" col="0" pos="0">
+    <value name="Dimension" value="2" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="84" target="70" type="literal" col="2" pos="0">
+    <value name="Value" value="3" />
+  </insert>
+  <insert id="85" target="70" type="literal" col="2" pos="1">
+    <value name="Value" value="4" />
+  </insert>
+  <insert id="86" target="71" type="literal" col="0" pos="0">
+    <value name="Value" value="1" />
+  </insert>
+  <insert id="87" target="71" type="literal" col="0" pos="1">
+    <value name="Value" value="2" />
+  </insert>
+  <insert id="88" target="71" type="literal" col="0" pos="2">
+    <value name="Value" value="3" />
+  </insert>
+  <insert id="89" target="72" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="90" target="76" type="literal" col="0" pos="0">
+    <value name="Value" value="0" />
+  </insert>
+  <insert id="91" target="77" type="name" col="0" pos="0">
+    <value name="Value" value="i" />
+  </insert>
+  <insert id="92" target="78" type="name" col="0" pos="0">
+    <value name="Value" value="j" />
+  </insert>
+  <insert id="93" target="79" type="binexp" col="0" pos="0">
+    <value name="Operator" value="25" />
+  </insert>
+  <insert id="94" target="80" type="name" col="1" pos="0">
+    <value name="Value" value="bar" />
+  </insert>
+  <insert id="95" target="81" type="literal" col="0" pos="0">
+    <value name="Value" isnull="true" value="" />
+  </insert>
+  <insert id="96" target="81" type="literal" col="0" pos="1">
+    <value name="Value" isnull="true" value="" />
+  </insert>
+  <insert id="97" target="81" type="name" col="1" pos="0">
+    <value name="Value" value="aSynchronizedMethod" />
+  </insert>
+  <insert id="98" target="84" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="99" target="85" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="100" target="86" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="101" target="87" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="102" target="88" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="103" target="90" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="int" />
+  </insert>
+  <insert id="104" target="93" type="arrayaccess" col="0" pos="0" />
+  <insert id="105" target="93" type="name" col="1" pos="0">
+    <value name="Value" value="aField" />
+  </insert>
+  <insert id="106" target="95" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="null" />
+  </insert>
+  <insert id="107" target="96" type="type" col="0" pos="0">
+    <value name="Dimension" value="0" />
+    <value name="Name" value="null" />
+  </insert>
+  <insert id="108" target="104" type="arrayaccess" col="0" pos="0" />
+  <insert id="109" target="104" type="name" col="1" pos="0">
+    <value name="Value" value="j" />
+  </insert>
+  <insert id="110" target="108" type="name" col="0" pos="0">
+    <value name="Value" value="foobar" />
+  </insert>
+  <insert id="111" target="108" type="name" col="1" pos="0">
+    <value name="Value" value="i" />
+  </insert>
+  <delete id="1" />
+</tree_delta>
+

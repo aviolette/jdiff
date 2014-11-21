@@ -1,0 +1,215 @@
+##################################################################3
+#
+# Makefile for JDiff Java code
+#
+# by Andrew Violette
+##################################################################3
+
+#
+# List of classes in the language.java.ast package
+#
+
+AST_CLASSES= \
+	language/java/ast/ASTTraverser.class \
+	language/java/ast/InterfaceDeclaration.class \
+	language/java/ast/Switch.class \
+	language/java/ast/InstanceOf.class \
+	language/java/ast/Cast.class \
+	language/java/ast/IfStatement.class \
+	language/java/ast/Initializer.class \
+	language/java/ast/ArrayInitializer.class \
+	language/java/ast/ConstructorInvocation.class \
+	language/java/ast/ArrayAccess.class \
+	language/java/ast/ContinueStatement.class \
+	language/java/ast/Initialization.class \
+	language/java/ast/Grouping.class \
+	language/java/ast/TryBlock.class \
+	language/java/ast/Node.class \
+	language/java/ast/ConstructorDeclaration.class \
+	language/java/ast/SynchronizedBlock.class \
+	language/java/ast/ThrowStatement.class \
+	language/java/ast/InfixExpression.class \
+	language/java/ast/Operator.class \
+	language/java/ast/CompilationUnit.class \
+	language/java/ast/UnaryExpression.class \
+	language/java/ast/ImportDeclaration.class \
+	language/java/ast/TypeDeclaration.class \
+	language/java/ast/PostfixExpression.class \
+	language/java/ast/Visibility.class \
+	language/java/ast/FieldDeclaration.class \
+	language/java/ast/ConditionalExpression.class \
+	language/java/ast/Parameter.class \
+	language/java/ast/Type.class \
+	language/java/ast/Identifier.class \
+	language/java/ast/Literal.class \
+	language/java/ast/Block.class \
+	language/java/ast/AbstractMethodDeclaration.class \
+	language/java/ast/LabeledStatement.class \
+	language/java/ast/BreakStatement.class \
+	language/java/ast/Expression.class \
+	language/java/ast/PrimaryExpression.class \
+	language/java/ast/Statement.class \
+	language/java/ast/VariableDeclaration.class \
+	language/java/ast/MethodDeclaration.class \
+	language/java/ast/WhileStatement.class \
+	language/java/ast/MethodInvocation.class \
+	language/java/ast/InvalidAttributeValueException.class \
+	language/java/ast/ForStatement.class \
+	language/java/ast/Name.class \
+	language/java/ast/FieldAccess.class \
+	language/java/ast/ClassAccess.class \
+	language/java/ast/StatementExpression.class \
+	language/java/ast/LocalVariableDeclaration.class \
+	language/java/ast/EmptyStatement.class \
+	language/java/ast/ReturnStatement.class \
+	language/java/ast/VariableDeclarator.class \
+	language/java/ast/ClassDeclaration.class
+
+#
+# List of classes in the language.java.parser package
+#
+
+PARSER_CLASSES= \
+	language/java/parser/JavaParser.java \
+	language/java/parser/JParser.class \
+	language/java/parser/JavaParser.class
+
+#
+# List of classes in the treediff.edit package
+#
+
+EDIT_CLASSES= \
+	treediff/edit/Edit.class \
+	treediff/edit/EditListener.class \
+	treediff/edit/Move.class \
+	treediff/edit/Delete.class \
+	treediff/edit/Insert.class \
+	treediff/edit/Update.class \
+	treediff/edit/EditScript.class
+
+#
+# List of classes in the treediff package
+#
+
+TREEDIFF= \
+	treediff/Diff.class \
+	treediff/FastMatch.class \
+	treediff/LCSSolver.class \
+	treediff/IncompatibleNodeException.class \
+	treediff/MatchingSet.class
+
+# 
+# List of classes in the tree package
+#
+
+TREE_CLASSES= \
+	tree/RootNode.class \
+	tree/InvalidAttributeException.class \
+	tree/Parser.class \
+	tree/Printer.class \
+	tree/TreePrinter.class \
+	tree/TreeNode.class
+
+#
+# List of classes in the debug package
+#
+
+DEBUG_CLASSES= \
+	debug/Debug.class \
+	debug/AssertionFailedException.class \
+
+#
+# List of classes in the language.java.diff package
+#
+
+JAVAUTILS= \
+	language/java/diff/AffectsSemanticsFilter.class \
+	language/java/diff/DiffFilter.class \
+	language/java/diff/SubclassBinaryCompatibilityFilter.class \
+	language/java/diff/DiffToHTMLGenerator.class \
+	language/java/diff/PrinterListener.class \
+	language/java/diff/JavaComparator.class \
+	language/java/diff/AlwaysFalseComparator.class \
+	language/java/diff/IndentationWriter.class \
+	language/java/diff/JavaDiff.class \
+	language/java/diff/JavaPatch.class \
+	language/java/diff/JavaDataModelPrint.class \
+	language/java/diff/JavaPrinter.class
+
+#
+# Contains the semicolon separated paths to the JAXP 1.0 JAR files
+#
+
+XML_LIBS=		c:/progra~1/javasoft/jaxp1.0/jaxp.jar;c:/progra~1/javasoft/jaxp1.0/parser.jar
+
+#
+# Contains the path to the lib directory of the MetaMata distribution
+#
+
+MM_LIB=		c:/javaclasses/metamata/lib
+
+#
+# Contains the semicolon-separated paths to the MetaMar JAR files
+#
+
+METAMATA_LIB=	$(MM_LIB)\metamata.jar;$(MM_LIB)\JavaCC.zip
+
+#
+# Contains the directory where the JavaDoc will be generated to
+#
+
+JDOC_DIR= 	..\docs\jdoc
+
+#
+# Contains the path of the JAR file that will hold the JDiff classes
+#
+
+JAR_FILE= ..\jdiff.jar
+
+#
+# Contains a list of all the classes that will be built by this make  file
+#
+
+ALL_CLASSES= $(DEBUG_CLASSES) $(TREE_CLASSES) $(AST_CLASSES) \
+		$(PARSER_CLASSES) $(EDIT_CLASSES) $(TREEDIFF) $(JAVAUTILS)
+
+.SUFFIXES:
+.SUFFIXES: .java .class .jj
+
+all: $(JAR_FILE)
+
+$(JAR_FILE): $(ALL_CLASSES)
+	-rm -f $(JAR_FILE)
+	jar cvf $(JAR_FILE) debug/*.class language/java/diff/*.class language/java/parser/*.class language/java/ast/*.class tree/*.class treediff/*.class treediff/ui/*.class treediff/edit/*.class treeview/*.class 
+
+language/java/ast/%.class: language/java/ast/%.java
+	javac $<
+
+language/java/parser/JavaParser.java: language/java/parser/JavaParser.jj
+	cmd /c "set classpath=. & c:\javaclasses\metamata\bin\mparse.bat language\java\parser\JavaParser.jj"
+
+language/java/diff/%.class: language/java/diff/%.java
+	javac -classpath $(METAMATA_LIB);$(XML_LIBS);. $<
+
+language/java/parser/%.class: language/java/parser/%.java
+	javac -classpath $(METAMATA_LIB);. $<
+
+treediff/%.class: treediff/%.java
+	javac -classpath .;$(METAMATA_LIB);$(XML_LIBS) $<
+
+treediff/edit/%.class: treediff/edit/%.java
+	javac -classpath .;$(XML_LIBS) $<
+
+tree/%.class: tree/%.java
+	javac -classpath .;$(XML_LIBS) $<
+
+debug/%.class: debug/%.java
+	javac -classpath .;$(METAMATA_LIB) $<
+
+
+clean:
+	rm -rf $(TREEDIFF) $(TREE_CLASSES) $(AST_CLASSES) $(PARSER_CLASSES) $(EDIT_CLASSES) $(JAVAUTILS) $(DEBUG_CLASSES)
+
+jdoc:
+	if not exist $(JDOC_DIR) mkdir $(JDOC_DIR)
+	javadoc -package -classpath $(METAMATA_LIB);.;$(XML_LIBS) -d $(JDOC_DIR) -windowtitle "Delta Generation Project" language.java.ast treediff language.java.diff treediff.edit language.java.parser tree

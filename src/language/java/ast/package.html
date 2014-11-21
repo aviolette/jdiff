@@ -1,0 +1,25 @@
+<body>
+<p>
+
+The <b>language.java.ast</b> package contains the nodes that make up
+the abstract syntax tree (AST) for the Java language.  All classes in
+the abstract syntax tree derive directly, or indirectly from the
+<code>Node</code> class.
+
+<p>
+
+When the AST is produced, the root level node is an instance of a
+<code>CompilationUnit</code> class.  The compilation unit stores
+directly or indirectly all the children in the AST.  Children in the
+tree can also be retrieved via the <code>chain</code> method on the
+<code>CompilationUnit</code> class, which retrieves children in the
+tree with the specified label.
+
+<p>
+
+The AST classes and the <code>ASTTraverser</code> interface implement
+the Visitor pattern.  The nodes in the tree can be traversed by
+implementing the <code>ASTTraverser</code> interface, and passing the
+class to the node to the node's <code>accept()</code> method.
+
+</body>

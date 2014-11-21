@@ -1,0 +1,1473 @@
+package language.java.parser;
+/**
+ *
+ * This grammar file was updated by Andrew Violette to build a syntax
+ * tree for Java somewhere between November 1999 and February 2000.
+ *
+
+ */
+
+import language.java.ast.*;
+import java.util.*;
+import tree.*;
+
+public grammar class JavaParser 
+{
+    
+    private CompilationUnit m_unit = null;
+
+    public CompilationUnit parseCU()
+	throws com.metamata.parse.ParseException
+    {
+	return parseCU(false);
+    }
+
+    public CompilationUnit parseCU(boolean indexNodes)
+	throws com.metamata.parse.ParseException
+    {
+	m_unit = new CompilationUnit(indexNodes);
+	compilationUnit();
+	return m_unit;
+    }
+	 
+    public static void main(String[] args) 
+    {
+	JavaParser parser;
+	if (args.length == 0) 
+	{
+	    System.out.println("Java Parser:  Reading from standard input . . .");
+	    parser = new JavaParser(new java.io.InputStreamReader(System.in));
+	} 
+	else if (args.length == 1) 
+	{
+	    System.out.println("Java Parser:  Reading from file " + args[0] + " . . .");
+	    try 
+	    {
+		parser = new JavaParser(new java.io.InputStreamReader(new java.io.FileInputStream(args[0])));
+	    } 
+	    catch (java.io.FileNotFoundException e) 
+	    {
+		System.out.println("Java Parser:  File " + args[0] + " not found.");
+		return;
+	    }
+	} 
+	else 
+	{
+	    System.out.println("Java Parser:  Usage is one of:");
+	    System.out.println("         java JavaParser < inputfile");
+	    System.out.println("OR");
+	    System.out.println("         java JavaParser inputfile");
+	    return;
+	}
+	try 
+	{
+	    parser.compilationUnit();
+	    System.out.println("Java Parser:  Java program parsed successfully.");
+	} 
+	catch (com.metamata.parse.ParseException e) 
+	{
+	    System.out.println(e.getMessage());
+	    System.out.println("Java Parser:  Encountered errors during parse.");
+	}
+    }
+
+  /* WHITE SPACE */
+
+  skip { " " | "\t" | "\n" | "\r" | "\f" }
+
+  /* COMMENTS */
+
+  more {
+    "//" : IN_SINGLE_LINE_COMMENT
+  |
+    <"/**" ~['/']> { backup(1); } : IN_FORMAL_COMMENT
+  |
+    "/*" : IN_MULTI_LINE_COMMENT
+  }
+
+  <IN_SINGLE_LINE_COMMENT>
+  specialtoken {
+    <SINGLE_LINE_COMMENT: "\n" | "\r" | "\r\n" > : DEFAULT
+  }
+
+  <IN_FORMAL_COMMENT>
+  specialtoken {
+    <FORMAL_COMMENT: "*/" > : DEFAULT
+  }
+
+  <IN_MULTI_LINE_COMMENT>
+  specialtoken {
+    <MULTI_LINE_COMMENT: "*/" > : DEFAULT
+  }
+
+  <IN_SINGLE_LINE_COMMENT,IN_FORMAL_COMMENT,IN_MULTI_LINE_COMMENT>
+  more {
+    < ~[] >
+  }
+
+  /* RESERVED WORDS AND LITERALS */
+
+  token {
+    < ABSTRACT: "abstract" >
+  | < BOOLEAN: "boolean" >
+  | < BREAK: "break" >
+  | < BYTE: "byte" >
+  | < CASE: "case" >
+  | < CATCH: "catch" >
+  | < CHAR: "char" >
+  | < CLASS: "class" >
+  | < CONST: "const" >
+  | < CONTINUE: "continue" >
+  | < _DEFAULT: "default" >
+  | < DO: "do" >
+  | < DOUBLE: "double" >
+  | < ELSE: "else" >
+  | < EXTENDS: "extends" >
+  | < FALSE: "false" >
+  | < FINAL: "final" >
+  | < FINALLY: "finally" >
+  | < FLOAT: "float" >
+  | < FOR: "for" >
+  | < GOTO: "goto" >
+  | < IF: "if" >
+  | < IMPLEMENTS: "implements" >
+  | < IMPORT: "import" >
+  | < INSTANCEOF: "instanceof" >
+  | < INT: "int" >
+  | < INTERFACE: "interface" >
+  | < LONG: "long" >
+  | < NATIVE: "native" >
+  | < NEW: "new" >
+  | < NULL: "null" >
+  | < PACKAGE: "package">
+  | < PRIVATE: "private" >
+  | < PROTECTED: "protected" >
+  | < PUBLIC: "public" >
+  | < RETURN: "return" >
+  | < SHORT: "short" >
+  | < STATIC: "static" >
+  | < SUPER: "super" >
+  | < SWITCH: "switch" >
+  | < SYNCHRONIZED: "synchronized" >
+  | < THIS: "this" >
+  | < THROW: "throw" >
+  | < THROWS: "throws" >
+  | < TRANSIENT: "transient" >
+  | < TRUE: "true" >
+  | < TRY: "try" >
+  | < VOID: "void" >
+  | < VOLATILE: "volatile" >
+  | < WHILE: "while" >
+  }
+
+  /* LITERALS */
+
+  token {
+    < INTEGER_LITERAL:
+          <DECIMAL_LITERAL> (['l','L'])?
+        | <HEX_LITERAL> (['l','L'])?
+        | <OCTAL_LITERAL> (['l','L'])?
+    >
+  |
+    < #DECIMAL_LITERAL: ['1'-'9'] (['0'-'9'])* >
+  |
+    < #HEX_LITERAL: "0" ['x','X'] (['0'-'9','a'-'f','A'-'F'])+ >
+  |
+    < #OCTAL_LITERAL: "0" (['0'-'7'])* >
+  |
+    < FLOATING_POINT_LITERAL:
+          (['0'-'9'])+ "." (['0'-'9'])* (<EXPONENT>)? (['f','F','d','D'])?
+        | "." (['0'-'9'])+ (<EXPONENT>)? (['f','F','d','D'])?
+        | (['0'-'9'])+ <EXPONENT> (['f','F','d','D'])?
+        | (['0'-'9'])+ (<EXPONENT>)? ['f','F','d','D']
+    >
+  |
+    < #EXPONENT: ['e','E'] (['+','-'])? (['0'-'9'])+ >
+  |
+    < CHARACTER_LITERAL:
+        "'"
+        (   (~['\'','\\','\n','\r'])
+          | ("\\"
+              ( ['n','t','b','r','f','\\','\'','\"']
+              | ['0'-'7'] ( ['0'-'7'] )?
+              | ['0'-'3'] ['0'-'7'] ['0'-'7']
+              )
+            )
+        )
+        "'"
+    >
+  |
+    < STRING_LITERAL:
+        "\""
+        (   (~['\"','\\','\n','\r'])
+          | ("\\"
+              ( ['n','t','b','r','f','\\','\'','\"']
+              | ['0'-'7'] ( ['0'-'7'] )?
+              | ['0'-'3'] ['0'-'7'] ['0'-'7']
+              )
+            )
+        )*
+        "\""
+    >
+  }
+
+  /* IDENTIFIERS */
+
+  token {
+    < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+  |
+    < #LETTER:
+        [
+         '$',
+         'A'-'Z',
+         '_',
+         'a'-'z',
+         '\u00c0'-'\u00d6',
+         '\u00d8'-'\u00f6',
+         '\u00f8'-'\u00ff',
+         '\u0100'-'\u1fff',
+         '\u3040'-'\u318f',
+         '\u3300'-'\u337f',
+         '\u3400'-'\u3d2d',
+         '\u4e00'-'\u9fff',
+         '\uf900'-'\ufaff'
+        ]
+    >
+  |
+    < #DIGIT:
+        [
+         '0'-'9',
+         '\u0660'-'\u0669',
+         '\u06f0'-'\u06f9',
+         '\u0966'-'\u096f',
+         '\u09e6'-'\u09ef',
+         '\u0a66'-'\u0a6f',
+         '\u0ae6'-'\u0aef',
+         '\u0b66'-'\u0b6f',
+         '\u0be7'-'\u0bef',
+         '\u0c66'-'\u0c6f',
+         '\u0ce6'-'\u0cef',
+         '\u0d66'-'\u0d6f',
+         '\u0e50'-'\u0e59',
+         '\u0ed0'-'\u0ed9',
+         '\u1040'-'\u1049'
+        ]
+    >
+  }
+
+  /* SEPARATORS */
+
+  token {
+    < LPAREN: "(" >
+  | < RPAREN: ")" >
+  | < LBRACE: "{" >
+  | < RBRACE: "}" >
+  | < LBRACKET: "[" >
+  | < RBRACKET: "]" >
+  | < SEMICOLON: ";" >
+  | < COMMA: "," >
+  | < DOT: "." >
+  }
+
+  /* OPERATORS */
+
+  token {
+    < ASSIGN: "=" >
+  | < GT: ">" >
+  | < LT: "<" >
+  | < BANG: "!" >
+  | < TILDE: "~" >
+  | < HOOK: "?" >
+  | < COLON: ":" >
+  | < EQ: "==" >
+  | < LE: "<=" >
+  | < GE: ">=" >
+  | < NE: "!=" >
+  | < SC_OR: "||" >
+  | < SC_AND: "&&" >
+  | < INCR: "++" >
+  | < DECR: "--" >
+  | < PLUS: "+" >
+  | < MINUS: "-" >
+  | < STAR: "*" >
+  | < SLASH: "/" >
+  | < BIT_AND: "&" >
+  | < BIT_OR: "|" >
+  | < XOR: "^" >
+  | < REM: "%" >
+  | < LSHIFT: "<<" >
+  | < RSIGNEDSHIFT: ">>" >
+  | < RUNSIGNEDSHIFT: ">>>" >
+  | < PLUSASSIGN: "+=" >
+  | < MINUSASSIGN: "-=" >
+  | < STARASSIGN: "*=" >
+  | < SLASHASSIGN: "/=" >
+  | < ANDASSIGN: "&=" >
+  | < ORASSIGN: "|=" >
+  | < XORASSIGN: "^=" >
+  | < REMASSIGN: "%=" >
+  | < LSHIFTASSIGN: "<<=" >
+  | < RSIGNEDSHIFTASSIGN: ">>=" >
+  | < RUNSIGNEDSHIFTASSIGN: ">>>=" >
+  }
+
+  /*****************************************
+   * THE JAVA LANGUAGE GRAMMAR STARTS HERE *
+   *****************************************/
+
+  /*
+   * Program structuring syntax follows.
+   */
+
+    public production void compilationUnit() 
+    {
+	{ if(m_unit == null) { m_unit = new CompilationUnit(false); } TypeDeclaration n = null; }
+	[ packageDeclaration() ]
+	( importDeclaration() )*
+	( n=typeDeclaration() { m_unit.setTypeDeclaration(n); } )*
+	<eof>
+    }
+
+
+    private production void packageDeclaration() 
+    {
+	{ Name n=null; }
+	"package" n = name()  ";"
+	{ m_unit.setPackage(n.getValue()); }
+    }
+
+
+    private production void importDeclaration() 
+    {
+	{ Name name; boolean onDemand = false; }
+	"import" name=name() [ "." "*" {onDemand = true;} ] ";"
+	{ ImportDeclaration i = new ImportDeclaration(name.getValue(), onDemand); 
+	  m_unit.addImportDeclaration(i); 
+	}
+    }
+
+
+    private production TypeDeclaration typeDeclaration() 
+    {
+	{ TypeDeclaration node = null; }
+	(
+	lookahead( ( "abstract" | "final" | "public" )* "class" )
+	node=classDeclaration()
+	|
+	node=interfaceDeclaration()
+	|
+	";"
+	)
+	{ return node; }
+    }
+
+  /*
+   * Declaration syntax follows.
+   */
+
+    private production ClassDeclaration classDeclaration() 
+    {
+	{ 
+	    ClassDeclaration dec = new ClassDeclaration(null);
+	    boolean isAbstract = false;  
+	    boolean isFinal = false;
+	    Visibility visibility = Visibility.DEFAULT;
+	    
+	}
+	( 
+	 "abstract" { isAbstract = true; } | 
+	 "final" { isFinal = true; } | 
+	 "public" { visibility = Visibility.PUBLIC; } )*
+
+	dec=unmodifiedClassDeclaration()
+	{
+	    dec.setAbstract(isAbstract);
+	    dec.setFinal(isFinal);
+	    dec.setVisibility(visibility);
+	    return dec;
+	}
+    }
+
+    private production ClassDeclaration unmodifiedClassDeclaration()
+    {
+	{ 
+	    ClassDeclaration dec = new ClassDeclaration(null);
+	    String name = null;
+	    Name superClass = null;
+	    Vector v = null; 
+	}
+	"class" <IDENTIFIER> { name = getToken(0).toString();  } [ "extends" superClass=name() ] [ "implements" v=nameList(true) ]
+								classBody(dec)
+	{  
+	    dec.setName(name);
+	    dec.setExtends(superClass == null ? null : superClass.getValue());
+	    dec.addImplementsList(v);
+	    return dec;
+	}
+    }
+
+    private production void classBody(ClassDeclaration dec) 
+    {
+	{ Node n = null; }
+	"{" ( n=classBodyDeclaration() { dec.addDeclaration(n); } )* "}"
+    }
+
+    private production ClassDeclaration nestedClassDeclaration() 
+    {
+      {
+	  ClassDeclaration dec;
+	  boolean isStatic = false; boolean isAbstract = false;
+	  boolean isFinal = false; Visibility visibility = Visibility.DEFAULT;
+      }
+      ( 
+       "static" { isStatic = true; } | 
+       "abstract" { isAbstract = true; } | 
+       "final" { isFinal = true; } | 
+       "public" { visibility = Visibility.PUBLIC; } | 
+       "protected" { visibility = Visibility.PROTECTED; } | 
+       "private" { visibility = Visibility.PRIVATE; }
+       )*
+       dec=unmodifiedClassDeclaration()
+       {
+	   dec.setStatic(isStatic);
+	   dec.setFinal(isFinal);
+	   dec.setAbstract(isAbstract);
+	   dec.setVisibility(visibility);
+	   return dec;
+       }
+    }
+
+    private production Node classBodyDeclaration() 
+    {
+	{ Node n= null; }
+	(
+	lookahead(2)
+	n=initializer()
+	|
+	lookahead( ( "static" | "abstract" | "final" | "public" | "protected" | "private" )* "class" )
+	n=nestedClassDeclaration()
+	|
+	lookahead( ( "static" | "abstract" | "final" | "public" | "protected" | "private" )* "interface" )
+	n=nestedInterfaceDeclaration()
+	|
+	lookahead( [ "public" | "protected" | "private" ] name() "(" )
+	n=constructorDeclaration()
+	|
+	lookahead( methodDeclarationLookahead() )
+	n=methodDeclaration()
+	|
+	n=fieldDeclaration()
+	)
+	{ return n; }
+     }
+
+  // This production is to determine lookahead only.
+    private production void methodDeclarationLookahead() 
+    {
+	( "public" | "protected" | "private" | "static" | "abstract" | "final" | "native" | "synchronized" )*
+	resultType() <IDENTIFIER> "("
+    }
+
+    private production InterfaceDeclaration interfaceDeclaration() 
+    {
+	{ InterfaceDeclaration id = null; boolean isAbstract = false; Visibility v = Visibility.DEFAULT; }
+	( "abstract" { isAbstract = true; } | 
+	"public" { v = Visibility.PUBLIC; } )*
+	id=unmodifiedInterfaceDeclaration()
+	{
+	    id.setAbstract(isAbstract);
+	    id.setVisibility(v);
+	    return id;
+	}
+    }
+
+    private production InterfaceDeclaration nestedInterfaceDeclaration() 
+    {
+	{ InterfaceDeclaration id = null; 
+	  boolean isFinal = false; 
+	  boolean isStatic = false; 
+	  boolean isAbstract = false; 
+	  Visibility v = Visibility.DEFAULT; }
+	( "static" { isStatic = true; } | 
+	"abstract" {isAbstract = true; } | 
+	"final" {isFinal = true; } | 
+	"public" {v = Visibility.PUBLIC; } | 
+	"protected"  {v = Visibility.PROTECTED; } | 
+	"private" { v = Visibility.PRIVATE; } )*
+	id=unmodifiedInterfaceDeclaration()
+	{
+	    id.setStatic(isStatic);
+	    id.setAbstract(isAbstract);
+	    id.setFinal(isFinal);
+	    id.setVisibility(v);
+	    return id;
+	}
+    }
+
+    private production InterfaceDeclaration unmodifiedInterfaceDeclaration() 
+    {
+	{ Vector v = null; Node node = null; InterfaceDeclaration id = new InterfaceDeclaration(); }
+	"interface" <IDENTIFIER> { id.setName(getToken(0).toString()); } 
+	[ "extends" v=nameList(true) { Iterator i=v.iterator(); while(i.hasNext()) { Name n = (Name)i.next(); id.addExtendedInterface(n); }} ]
+	"{" ( node=interfaceMemberDeclaration() { id.addDeclaration(node); } )* "}"
+        { return id; }									  
+    }
+
+    private production Node interfaceMemberDeclaration() 
+    {
+	{ Node n = null; }
+	(
+	lookahead( ( "static" | "abstract" | "final" | "public" | "protected" | "private" )* "class" )
+	n=nestedClassDeclaration()
+	|
+	lookahead( ( "static" | "abstract" | "final" | "public" | "protected" | "private" )* "interface" )
+	n=nestedInterfaceDeclaration()
+	|
+	lookahead( methodDeclarationLookahead() )
+	n=methodDeclaration()
+	|
+	n=fieldDeclaration()
+	)
+	{ return n; }
+    }
+
+    private production FieldDeclaration fieldDeclaration() 
+    {
+	{ 
+	    FieldDeclaration dec = new FieldDeclaration();
+	    Type type;
+	    String name;
+	    VariableDeclarator v;
+	}
+	( 
+	 "public" { dec.setVisibility(Visibility.PUBLIC); } | 
+	 "protected" { dec.setVisibility(Visibility.PROTECTED); } | 
+	 "private" { dec.setVisibility(Visibility.PRIVATE); } | 
+	 "static" { dec.setStatic(true); } | 
+	 "final" { dec.setFinal(true); } | 
+	 "transient" { dec.setTransient(true); } | 
+	 "volatile" { dec.setVolatile(true); }
+	 )*
+	type=type() v=variableDeclarator() {dec.addVariable(v); } ( "," v=variableDeclarator() {dec.addVariable(v); })* ";"
+	{
+	    dec.setType(type);
+	    return dec;
+	}
+    }
+
+    private production VariableDeclarator variableDeclarator() 
+    {
+	{ VariableDeclarator v = new VariableDeclarator(); Node n = null; }
+	variableDeclaratorId(v) [ "=" n=variableInitializer() { v.setInitializer(n); } ]
+	{ return v; }
+    }
+
+    private production VariableDeclarator variableDeclaratorId(VariableDeclarator v) 
+    {
+	{ String name = ""; int dim = 0; }
+	<IDENTIFIER> { name = getToken(0).toString(); }( "[" "]" {dim++;})*
+	{ v.setName(name); v.setDimension(dim); }					       
+    }
+
+    private production Node variableInitializer() 
+    {
+	{ Node n = null; }
+	(
+	n=arrayInitializer()
+	|
+	n=expression() 
+	)
+	{ return n; }
+	
+    }
+
+    private production Node arrayInitializer() 
+    {
+	{ ArrayInitializer a = new ArrayInitializer(); Node n = null; }
+	"{" [ n=variableInitializer() { a.addInit(n); } ( lookahead(2) "," n=variableInitializer() {a.addInit(n);} )* ] [ "," ] "}"
+	{ return a; }
+    }
+
+    private production MethodDeclaration methodDeclaration() 
+    {
+	{ MethodDeclaration dec = new MethodDeclaration();
+	Type t = null;
+	Block block = null;
+	Vector v = null;
+	}
+	( 
+	 "public" { dec.setVisibility(Visibility.PUBLIC); } | 
+	 "protected" { dec.setVisibility(Visibility.PROTECTED); } | 
+	 "private" { dec.setVisibility(Visibility.PRIVATE); } | 
+	 "static" { dec.setStatic(true); } | 
+	 "abstract" { dec.setAbstract(true); } | 
+	 "final" { dec.setFinal(true); } | 
+	 "native" { dec.setNative(true); } | 
+	 "synchronized" { dec.setSynchronized(true); }
+	 )*
+	(
+	 t=resultType() { dec.setReturnType(t); } methodDeclarator(dec) [ "throws" v=nameList(true) { dec.setThrowList(v); } ]
+	( block=block() { dec.setBlock(block); } | ";" )
+	 )
+	{
+	    return dec;
+	}
+    }
+
+    private production void methodDeclarator(MethodDeclaration dec) 
+    {
+	{ String name = ""; Vector v; }
+	<IDENTIFIER> { name = getToken(0).toString(); } v=formalParameters() ( "[" "]" { debug.Debug.assert(false, "what does this do?"); } )*
+        { 
+	    dec.setName(name);
+	    dec.addParameters(v);
+	}							
+    }
+
+    private production Vector formalParameters() 
+    {
+	{ Vector v = new Vector();
+	  Parameter p;
+	}
+	"(" [ p=formalParameter() {v.addElement(p); } ( "," p=formalParameter() { v.addElement(p); } )* ] ")"
+        { return v; }
+    }
+
+    private production Parameter formalParameter() 
+    {
+	{ VariableDeclarator v = new VariableDeclarator();
+	  Type t;
+	  Parameter p = new Parameter();
+	}
+	[ "final" { p.setFinal(true); } ] t=type() variableDeclaratorId(v)
+	{ 
+	    p.setVariable(v);
+	    p.setType(t);
+	    return p; 
+	}
+    }
+
+    private production Node constructorDeclaration() 
+    {
+	{ Node n; Block b = new Block(); ConstructorDeclaration con = new ConstructorDeclaration(); Vector v;  }
+	[ "public" {con.setVisibility(Visibility.PUBLIC); } | 
+	"protected" {con.setVisibility(Visibility.PROTECTED); } | 
+	"private" {con.setVisibility(Visibility.PRIVATE);} ]
+	<IDENTIFIER> { con.setName(getToken(0).toString()); } v=formalParameters() {con.addParameters(v); }
+	[ "throws" nameList(false) ]
+	"{"
+	[ lookahead(explicitConstructorInvocation()) n=explicitConstructorInvocation() { b.addStatement(n); } ]
+	( n=blockStatement() { b.addStatement(n); } )*
+	"}"
+	{ con.setBlock(b); return con; }
+    }
+
+    private production ConstructorInvocation explicitConstructorInvocation() 
+    {
+	{ ConstructorInvocation inv = null; Vector v = null; }
+	(
+	lookahead("this" arguments() ";")
+	"this" v=arguments() ";"
+	{ inv = new ConstructorInvocation(null, v, true); }
+	|
+	[ lookahead(2) primaryExpression() "." ] "super" v=arguments() { inv = new ConstructorInvocation(null, v, false); } ";"
+	)
+	{ return inv; }
+    }
+
+    private production Initializer initializer() 
+    {
+	{ Initializer i = new Initializer(); Block b = null; }
+	[ "static" {i.setStatic(true); }] b=block() {i.setBlock(b); }
+	{ return i; } 
+    }
+
+  /*
+   * type, name and expression syntax follows.
+   */
+
+    private production Type type() 
+    {
+	{ 
+	    String s = ""; 
+	    Name n = null;
+	    int d = 0;
+	}
+	(
+	( s=primitiveType() | n=name() {s=n.getValue(); } ) ( "[" "]" { d++; } )*
+	)
+	{ 
+	    Type t = new Type(s, d);
+	    return t; 
+	}
+    }
+    private production String primitiveType() 
+    {
+	{ String s = ""; }
+	(
+	"boolean"
+	{ s = "boolean"; }
+	|
+	"char"
+	{ s= "char"; }
+	|
+	"byte"
+	{ s= "byte"; }
+	|
+	"short"
+	{ s= "short"; }
+	|
+	"int"
+	{ s= "int"; }
+	|
+	"long"
+	{ s= "long"; }
+	|
+	"float"
+	{ s= "float"; }
+	|
+	"double"
+	{ s= "double"; }
+        )
+	{ return s; }
+   }
+
+    private production Type resultType() 
+    {
+	{ Type t = null; }
+	(
+	"void" { t = new Type("void"); }
+	|
+	t=type() 
+	)
+	{ return t; }
+    }
+
+    private production Name name() 
+    {
+	/*
+	 * A lookahead of 2 is required below since "name" can be followed
+	 * by a ".*" when used in the context of an "importDeclaration".
+	 */
+	{ Name n = null; }
+	<IDENTIFIER> { n = new Name(getToken(0).toString()); }
+	( lookahead(2) "." <IDENTIFIER> { n.addIdentifier(getToken(0).toString()); })*
+	{ return n; }
+    }
+
+    private production Vector nameList(boolean asName) 
+    {
+	{ 
+	    Name n = null;
+	    Vector v = new Vector();
+	}
+	n=name() { v.addElement(asName ? (Object)n : (Object)n.getValue()); }
+	( "," n=name() { v.addElement(asName ? (Object)n : (Object)n.getValue()); } )*
+
+	{ return v; }
+    }
+
+  /*
+   * expression syntax follows.
+   */
+    
+    private production Expression expression() 
+    {
+	{ Expression expr = null; }
+	/*
+	 * This expansion has been written this way instead of:
+	 *   Assignment() | conditionalExpression()
+	 * for performance reasons.
+	 * However, it is a weakening of the grammar for it allows the LHS of
+	 * assignments to be any conditional expression whereas it can only be
+	 * a primary expression.  Consider adding a semantic predicate to work
+	 * around this.
+	 */
+	expr=conditionalExpression()
+	[
+	 assignmentOperator() expression() { debug.Debug.assert(false, "when do I hit this production?"); }
+	]
+	{ return expr; }
+    }
+
+    private production int assignmentOperator() 
+    {
+	{ int op = 0; }
+	( 
+	 "=" { op = Operator.ASSIGN;} |
+	 "*=" { op = Operator.TIMESASSIGN;} | 
+	 "/=" { op = Operator.DIVIDEASSIGN;} | 
+	 "%=" { op = Operator.MODULOASSIGN;}| 
+	 "+=" { op = Operator.PLUSASSIGN;} | 
+	 "-=" { op = Operator.MINUSASSIGN;} | 
+	 "<<=" { op = Operator.SLASSIGN;} | 
+	 ">>=" { op = Operator.SRASSIGN; } | 
+	 ">>>=" { op = Operator.USRASSIGN;} | 
+	 "&=" {op = Operator.ANDASSIGN;} | 
+	 "^=" {op = Operator.XORASSIGN;} | 
+	 "|=" {op = Operator.ORASSIGN;})
+	{ return op; }
+    }
+
+    private production Expression conditionalExpression() 
+    {
+	{ Expression expr = null, tmp = null; ConditionalExpression exp = null; }
+	
+	tmp=conditionalOrExpression() [ "?" expr=expression() 
+				      { exp = new ConditionalExpression();
+					exp.setCondition(tmp);
+					exp.setIfTrue(expr);
+				       } ":" tmp=conditionalExpression()
+				       { exp.setIfFalse(tmp); }]
+	{ return (exp == null) ? tmp : exp; }
+    }
+    
+    private production Expression conditionalOrExpression() 
+    {
+	{ Expression expr = null, tmp = null; }
+	(
+	expr=conditionalAndExpression() 
+	( "||" tmp=conditionalAndExpression()
+	  { InfixExpression orexp = new InfixExpression();
+	    orexp.setOperator(Operator.LOG_OR);
+	    orexp.setLeft(expr); 
+	    orexp.setRight(tmp);
+	    expr=orexp; })*
+	)
+	{ return expr; }
+    }
+
+    private production Expression conditionalAndExpression() 
+    {
+	{ Expression expr = null, tmp = null; }
+	(
+	expr=inclusiveOrExpression() 
+	( "&&" tmp=inclusiveOrExpression()
+	  { InfixExpression andexp = new InfixExpression();
+	    andexp.setLeft(expr); 
+	    andexp.setOperator(Operator.LOG_AND);
+	    andexp.setRight(tmp);
+	    expr = andexp; })*
+	)
+	{ return expr; }
+    }
+
+    private production Expression inclusiveOrExpression() 
+    {
+	{ Expression expr = null, tmp = null; }
+	expr=exclusiveOrExpression() ( "|" tmp=exclusiveOrExpression() 
+				       { InfixExpression orexp = new InfixExpression();
+					 orexp.setLeft(expr);
+					 orexp.setOperator(Operator.BIT_OR);
+					 orexp.setRight(tmp);
+					 expr = orexp; })*
+	{ return expr; }
+    }
+
+    private production Expression exclusiveOrExpression() 
+    {
+	{ Expression expr = null, tmp = null; }
+	expr=andExpression() ( "^" tmp=andExpression()
+			       { InfixExpression orexp = new InfixExpression();
+				 orexp.setLeft(expr);
+				 orexp.setOperator(Operator.BIT_XOR);
+				 orexp.setRight(tmp);
+				 expr = orexp; 
+			       })*
+	{ return expr; }
+    }
+
+    private production Expression andExpression() 
+    {
+	{ Expression expr = null, tmp = null; }
+	expr=equalityExpression() ( "&" tmp=equalityExpression()
+				    {
+					InfixExpression exp = new InfixExpression();
+					exp.setLeft(expr);
+					exp.setOperator(Operator.BIT_AND);
+					exp.setRight(tmp);
+					expr = exp;
+				    })*
+	{ return expr; }
+    }
+
+    private production Expression equalityExpression() 
+    {
+	{ Expression expr = null, tmp = null; int eq = Operator.EQ; }
+	expr=instanceOfExpression() ( ( "==" | "!=" { eq = Operator.NEQ; } ) 
+				      tmp=instanceOfExpression()
+				      {
+					  InfixExpression exp = new InfixExpression();
+					  exp.setLeft(expr);
+					  exp.setOperator(eq);
+					  exp.setRight(tmp);
+					  expr = exp;
+				      })*
+	{ return expr; }
+    }
+
+    private production Expression instanceOfExpression() 
+    {
+	{ Expression expr = null; Type t = null; }
+	expr=relationalExpression() [ "instanceof" t=type() { expr = new InstanceOf(expr,t); } ]
+	{ return expr; }
+    }
+
+    private production Expression relationalExpression() 
+    {
+	{ Expression expr = null, tmp = null; int op = Operator.LT; }
+	expr=shiftExpression() ( ( "<" | ">" { op = Operator.GT; } | "<=" { op = Operator.LE; } | ">=" { op = Operator.GE; }) tmp=shiftExpression() {
+	    InfixExpression exp = new InfixExpression();
+	    exp.setLeft(expr);
+	    exp.setOperator(op);
+	    exp.setRight(tmp);
+	    expr = exp;
+	    } )*
+	{ return expr; }
+    }
+
+    private production Expression shiftExpression() 
+    {
+	{ Expression expr = null, tmp = null; int op = Operator.LS; }
+	expr=additiveExpression() ( ( "<<" | ">>" {op = Operator.RS; }| ">>>" {op=Operator.URS;}) 
+				    tmp=additiveExpression()
+				    {
+					InfixExpression exp = new InfixExpression();
+					exp.setLeft(expr);
+					exp.setOperator(op);
+					exp.setRight(tmp);
+					expr = exp;
+				    })*
+	{ return expr; }
+    }
+
+    private production Expression additiveExpression() 
+    {
+	{ Expression expr = null, tmp=null; int op = Operator.PLUS; }
+	expr=multiplicativeExpression() ( ( "+" | "-" {op = Operator.MINUS; }) 
+					  tmp=multiplicativeExpression()
+					  {
+					      InfixExpression exp = new InfixExpression();
+					      exp.setLeft(expr);
+					      exp.setOperator(op);
+					      exp.setRight(tmp);
+					      expr = exp;
+					  })*
+	{ return expr; }
+    }
+
+    private production Expression multiplicativeExpression() 
+    {
+	{ Expression expr = null, tmp = null; int op = Operator.MULT; }
+	expr=unaryExpression() ( ( "*" | "/" { op = Operator.DIVIDE; } | "%" { op = Operator.MOD; }) 
+				 tmp=unaryExpression()
+				 {
+				     InfixExpression exp = new InfixExpression();
+				     exp.setLeft(expr);
+				     exp.setOperator(op);
+				     exp.setRight(tmp);
+				     expr = exp;
+				 })*
+	{ return expr; }
+    }
+
+    private production Expression unaryExpression() 
+    {
+	{ Expression expr = null; int op = Operator.PLUS;  }
+	(
+	 ( "+" | "-" { op = Operator.MINUS; }) expr=unaryExpression() { expr = new UnaryExpression(expr, op); }
+	|
+	expr=preIncrementExpression()
+	|
+	expr=preDecrementExpression()
+	|
+	expr=unaryExpressionNotPlusMinus()
+	)
+	{ return expr; }
+    }
+
+    private production Expression preIncrementExpression() 
+    {
+	{Expression expr = null; }
+	"++" expr=primaryExpression() { expr = new UnaryExpression(expr, Operator.INCR); }
+	{ return expr; }
+    }
+
+    private production Expression preDecrementExpression() 
+    {
+	{ Expression expr = null; }
+	"--" expr=primaryExpression() { expr = new UnaryExpression(expr, Operator.DECR); }
+	{ return expr; }
+    }
+
+    private production Expression unaryExpressionNotPlusMinus() 
+    {
+	{ Expression expr = null; int op = Operator.BIT_NOT; }
+	(
+	 ( "~" | "!" { op = Operator.LOG_NOT; }) expr=unaryExpression() {expr = new UnaryExpression(expr, op); }
+	|
+	lookahead( castLookahead() )
+	expr=castExpression() 
+	|
+	expr=postfixExpression()
+	)
+	{ return expr; }
+    }
+
+  // This production is to determine lookahead only.  The LOOKAHEAD
+  // specifications below are not used, but they are there just to
+  // indicate that we know about this.
+    private production void castLookahead() 
+    {
+	lookahead(2)
+	"(" primitiveType()
+	|
+	lookahead("(" name() "[")
+	"(" name() "[" "]"
+	|
+	"(" name() ")" ( "~" | "!" | "(" | <IDENTIFIER> | "this" | "super" | "new" | literal() )
+    }
+
+    private production Expression postfixExpression() 
+    {
+	{ Expression expr = null; }
+	(
+	expr=primaryExpression() [ "++" {expr = new PostfixExpression(expr, Operator.INCR); } | 
+	"--" {expr = new PostfixExpression(expr, Operator.DECR); }]
+	)
+	{ return expr; }
+	
+    }
+
+    private production Expression castExpression() 
+    {
+	{ Cast c = null; Type t = null; Expression e = null;}
+
+	(
+	lookahead("(" primitiveType())
+	"(" t=type() ")" e=unaryExpression() 
+	{ c = new Cast(); c.setType(t); c.setExpression(e); }
+	|
+	"(" t=type() ")" e=unaryExpressionNotPlusMinus() 
+	{ c = new Cast(); c.setType(t); c.setExpression(e); }
+	)
+	{ return c; }
+    }
+
+    private production PrimaryExpression primaryExpression() 
+    {
+	{ PrimaryExpression expr = null; Node n;}
+	expr=primaryPrefix() ( lookahead(2) expr=primarySuffix(expr) { } )*
+	{ return expr; }
+    }
+
+    private production PrimaryExpression primaryPrefix() 
+    {
+	{ Type t = null; PrimaryExpression n = null; String s=null; Expression e = null;}
+	(
+	 n=literal()
+	 |
+	 "this"
+	 {
+	     n = new Identifier("this");
+	 }
+	 |
+	 "super" "." <IDENTIFIER>
+	 {
+	     n = new FieldAccess(new Identifier("super"), 
+				 getToken(0).toString());
+	 }
+	 |
+	 "(" e=expression() ")"
+ 	 {
+	     n = new Grouping(e);
+	 }
+	 |
+	 n=allocationExpression()
+	 |
+	 lookahead( resultType() "." "class" )
+	 t=resultType() "." "class"
+	 {
+	     n=new ClassAccess(t);
+	 }
+	 |
+	 n=name()
+	 )
+	{ return n; }
+    }
+
+    private production PrimaryExpression primarySuffix(PrimaryExpression expr) 
+    {
+	{Vector v = null; PrimaryExpression expr2 = null; Expression e = null;}
+	(
+	lookahead(2)
+	"." "this"
+	{
+	   expr2 = new FieldAccess(expr, "this"); 
+	}
+	|
+	lookahead(2)
+	"." allocationExpression()
+	{
+	   debug.Debug.assert(false, "I don't know what this production does.");
+	}
+	|
+	    "[" e=expression() "]" 
+	   { 
+		expr2= new ArrayAccess(expr, e); 
+	   }
+	|
+	"." <IDENTIFIER>
+	   { 
+		expr2 = new FieldAccess(expr, getToken(0).toString()); 
+	   }
+	|
+	v=arguments()
+	   {
+		expr2 = new MethodInvocation(expr, v);
+	   }
+	)
+	{
+	   return expr2; 
+	}
+
+    }
+
+    private production Literal literal() 
+    {
+	{ Literal l = null; }
+	(
+	 <INTEGER_LITERAL>
+	 { l = new Literal(new Type("int")); l.setValue(new Integer(getToken(0).toString())); }
+	 |
+	 <FLOATING_POINT_LITERAL>
+	 { l = new Literal(new Type("float")); l.setValue(new Float(getToken(0).toString())); }
+	 |
+	 <CHARACTER_LITERAL> 
+	 { l = new Literal(new Type("char")); l.setValue(new Character(getToken(0).toString().charAt(1))); }
+	 |
+	 <STRING_LITERAL> 
+	 { l = new Literal(new Type(Type.ST_STRING)); 
+	 String s = getToken(0).toString(); 
+	 l.setValue(s.substring(1, s.length() - 1)); }
+	 |
+	 "true" { l = new Literal(new Type("boolean")); l.setValue(new Boolean(true)); }
+	 |
+	 "false" { l = new Literal(new Type("boolean")); l.setValue(new Boolean(false)); }
+	 //	 l=booleanLiteral()
+	 |
+	 nullLiteral() { l = new Literal(new Type("null")); }
+	)
+	{ return l; }
+    }
+
+    private production void nullLiteral() 
+    {
+	"null"
+    }
+    
+    private production Vector arguments() 
+    {
+	{ Vector v = null; }
+	"(" [ v=argumentList() ] ")"
+	{ return (v == null) ?  (new Vector()) : v; }
+    }
+
+    private production Vector argumentList() 
+    {
+	{ Vector v = new Vector(); Expression e=null; }
+	e=expression() {v.addElement(e); } ( "," e=expression() {v.addElement(e); } )*
+	{ return v; }
+    }
+
+    private production Initialization allocationExpression() 
+    {
+	{ Initialization init = null; 
+	Type t = null; 
+	String s=null; 
+	Vector v=null;
+	Name n=null;}
+	(
+	lookahead(2)
+	"new" s=primitiveType() {init = new Initialization(); 
+				 t = new Type(); 
+				 init.setType(t); 
+				 t.setName(s); } arrayDimsAndInits(init) {t.setDimension(init.getInitCount());}
+	|
+	"new"  n=name() {init = new Initialization(); t = new Type(); init.setType(t); t.setName(n.getValue()); }
+	(
+	 arrayDimsAndInits(init)
+	 |
+	 v=arguments() 
+	 { java.util.Iterator i=v.iterator(); 
+	   while(i.hasNext()) 
+	   init.addInit((Expression)i.next()); 
+	 } [ classBody(null) ]
+	 )
+	)
+	{ return init; }
+    }
+
+  /*
+   * The third LOOKAHEAD specification below is to parse to primarySuffix
+   * if there is an expression between the "[...]".
+   */
+    private production void arrayDimsAndInits(Initialization init) 
+    {
+	{ Expression e=null; }
+	(
+	lookahead(2)
+	( lookahead(2) "[" e=expression() {init.addInit(e); } "]" )+ ( lookahead(2) "[" "]" )*
+	|
+	( "[" "]" )+ arrayInitializer()
+	)
+    }
+
+  /*
+   * statement syntax follows.
+   */
+
+    private production Statement statement() 
+    {
+	{ Statement n = null; }
+	(
+	lookahead(2)
+	n=labeledStatement()
+	|
+	n=block() 
+	|
+	n=emptyStatement()
+	|
+	n=statementExpression(true) ";"
+	|
+	n=switchStatement()
+	|
+	n=ifStatement()
+	|
+	n=whileStatement()
+	|
+	n=doStatement()
+	|
+	n=forStatement()
+	|
+	n=breakStatement()
+	|
+	n=continueStatement()
+	|
+	n=returnStatement()
+	|
+	n=throwStatement()
+	|
+	n=synchronizedStatement()
+	|
+	n=tryStatement()
+	)
+	{ return n; }
+    }
+
+    private production LabeledStatement  labeledStatement() 
+    {
+
+	{ 
+	    LabeledStatement st = new LabeledStatement(); 
+	    Statement st1; 
+	}
+	<IDENTIFIER> { String s = getToken(0).toString(); st.setStatementLabel(s); } ":" st1=statement() {st.setStatement(st1); }
+        { return st; }									    
+    }
+
+    private production Block block() 
+    {
+	{ Block b = new Block(); Node n;   }
+	("{" ( n=blockStatement() {  if(n != null) { b.addStatement(n);} } )* "}")
+	{ return b; }
+    }
+
+    private production Node blockStatement() 
+    {
+	{ Node n = null; LocalVariableDeclaration d = null; }
+	(
+	lookahead([ "final" ] type() <IDENTIFIER>)
+	d=localVariableDeclaration() { n = d; d.setAsStatement(true); } ";" 
+	|
+	n=statement()
+	|
+	n=unmodifiedClassDeclaration()
+	|
+	n=unmodifiedInterfaceDeclaration()
+	)
+	{ return n; }
+    }
+
+    private production LocalVariableDeclaration localVariableDeclaration() 
+    {
+	{ 
+	    LocalVariableDeclaration dec = new LocalVariableDeclaration(); 
+	    Type t;
+	    VariableDeclarator v;
+	}
+	(
+	[ "final" { dec.setFinal(true); } ] t=type() {dec.setType(t); } v=variableDeclarator() {dec.addVariable(v);} 
+	( "," v=variableDeclarator() {dec.addVariable(v); })*
+	)
+	{
+	    return dec;
+	}
+    }
+
+    private production EmptyStatement emptyStatement() 
+    {
+	";"
+	
+	{ return new EmptyStatement(); }
+    }
+
+    private production StatementExpression statementExpression(boolean asStatement) 
+    {
+	{ StatementExpression s = new StatementExpression(asStatement); Expression e = null; Expression e2 = null; int op = 0; }
+	(
+	e=preIncrementExpression()
+	|
+	e=preDecrementExpression()
+	|
+	e=primaryExpression()
+	[
+	 "++" { e = new PostfixExpression(e, Operator.INCR); }
+	 |
+	 "--" { e = new PostfixExpression(e, Operator.DECR); }
+	 |
+	 op=assignmentOperator() e2=expression() {debug.Debug.assert(e2 != null, e.toString() + " " + Operator.asString(op));  e = new InfixExpression(e, op, e2); }
+	]
+	)
+	{ s.setExpression(e); return s; }
+  }
+
+    private production Switch switchStatement() 
+    {
+	{ Switch sw = new Switch(); 
+	Expression e = null; 
+	Switch.Case ca = null;
+	Node s = null; }
+	"switch" "(" e=expression() {sw.setSwitch(e); } ")" "{"
+	( ca=switchLabel() ( s=blockStatement() {ca.addStatement(s);  } )* {sw.addCase(ca); } )*
+	"}"
+	{ return sw; }
+    }
+
+    private production Switch.Case switchLabel() 
+    {
+	{ Switch.Case ca = new Switch.Case(); Expression e = null; }
+	(
+	 "case" e=expression() ":"
+	 |
+	 "default" ":"
+	 )
+	{ ca.setCaseLabel(e); return ca; }
+    }
+
+    private production IfStatement ifStatement() 
+    {
+	{ IfStatement s = new IfStatement(); Expression e = null; Statement s1 = null; Statement s2 = null; }
+	"if" "(" e=expression() ")" s1=statement() [ lookahead(1) "else" s2=statement() ]
+	{ s.setExpression(e); s.setThen(s1); s.setElse(s2); return s; }
+    }
+
+    private production WhileStatement whileStatement() 
+    {
+	{ WhileStatement w = new WhileStatement(); Expression e = null; Statement s = null; }
+	"while" "(" e=expression() { w.setExpression(e); }  ")" s=statement() { w.setStatement(s); }
+	{ return w; }
+    }
+
+    private production WhileStatement doStatement() 
+    {
+	{ WhileStatement w = new WhileStatement(true); Expression e= null; Statement s=null; }
+	"do" s=statement() { w.setStatement(s); } "while" "(" e=expression() { w.setExpression(e); } ")" ";"
+	{ return w; }												     
+    }
+
+    private production ForStatement forStatement() 
+    {
+	{ ForStatement fs = new ForStatement(); Statement s = null; Expression e = null; }
+	"for" "(" [ forInit(fs) ] ";" [ e=expression() { fs.setConditional(e); } ] ";" [ forUpdate(fs) ] ")" s=statement() { fs.setStatement(s); }
+	{ return fs; }
+    }
+
+    private production void forInit(ForStatement fs) 
+    {
+	{ LocalVariableDeclaration dec = null; Vector v = null;  }
+	(
+	lookahead( [ "final" ] type() <IDENTIFIER> )
+	dec=localVariableDeclaration()
+	{ fs.setInitializer(dec); }
+	|
+	v=statementExpressionList()
+	{ Iterator i = v.iterator(); while(i.hasNext()) fs.addInit((StatementExpression)i.next()); }
+	)
+    }
+
+    private production Vector statementExpressionList() 
+    {
+	{ Vector v = new Vector(); StatementExpression s = null;  }
+	s=statementExpression(false) {v.addElement(s); } ( "," s=statementExpression(false) {v.addElement(s);} )*
+        { return v; }						    
+    }
+
+    private production void forUpdate(ForStatement fs) 
+    {
+	{ Vector v = null; }
+	v=statementExpressionList()
+	{ Iterator i = v.iterator(); while(i.hasNext()) fs.addUpdate((StatementExpression)i.next()); }
+    }
+
+    private production BreakStatement breakStatement() 
+    {
+	{ BreakStatement b = new BreakStatement(); }
+	"break" [ <IDENTIFIER> { String s = getToken(0).toString(); b.setBreakLabel(s); } ] ";"
+	{ return b; }
+    }
+
+    private production ContinueStatement continueStatement() 
+    {
+	{ ContinueStatement b = new ContinueStatement(); }
+	"continue" [ <IDENTIFIER> { String s= getToken(0).toString(); b.setContinueLabel(s); } ] ";"
+	{ return b; }											       
+    }
+
+    private production ReturnStatement returnStatement() 
+    {
+	{ Expression e = null; ReturnStatement r = new ReturnStatement(); }
+	"return" [ e=expression() {r.setExpression(e);} ] ";"
+        { return r; }							  
+    }
+
+    private production ThrowStatement throwStatement() 
+    {
+	{ ThrowStatement s = new ThrowStatement(); Expression e = null; }
+	"throw" e=expression() ";"
+	{ s.setExpression(e); return s; }
+    }
+
+    private production SynchronizedBlock synchronizedStatement() 
+    {
+	
+	{ SynchronizedBlock s = new SynchronizedBlock(); Expression e = null; Block b = null; }
+	"synchronized" "(" e=expression() ")" b=block()
+	{ s.setExpression(e); s.setBlock(b); return s; }
+    }
+
+    private production TryBlock tryStatement() 
+    {
+	{ 
+	    TryBlock tryb = new TryBlock(); 
+	    TryBlock.CatchBlock cb = null; 
+	    Parameter p = null;
+	    Block b = null; }
+
+	"try" b=block() { tryb.setTry(b); }
+	( "catch" "(" p=formalParameter() ")" b=block() { cb = new TryBlock.CatchBlock(); cb.setParameter(p); cb.setBlock(b); tryb.addCatch(cb); } )*
+	[ "finally" b=block() { tryb.setFinally(b); } ]
+	{ return tryb; }
+    }
+
+}
